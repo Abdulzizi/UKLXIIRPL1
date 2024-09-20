@@ -18,7 +18,7 @@ model User {
   name      String
   email     String   @unique
   password  String
-  role      Role // Enum: Kasir, Manager, Admin
+  role      Role     @default(ADMIN) // Enum: Kasir, Manager, Admin
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   orders    Order[]

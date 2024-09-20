@@ -1,9 +1,15 @@
 import express from "express";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
-const PORT = 3000;
+const port = process.env.PORT || 3000;
 
+// Middleware to parse JSON requests
+app.use(express.json());
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// USER ROUTES
+app.use("/user", userRoutes);
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });

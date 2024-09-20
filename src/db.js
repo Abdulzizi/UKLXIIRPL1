@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const db = new PrismaClient({ errorFormat: "pretty" });
 
-module.exports = prisma;
+export default db;
