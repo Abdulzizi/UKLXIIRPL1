@@ -50,7 +50,7 @@ export const register = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({ error: "All fields are required" });
     }
-
+t5
     // Hashing password
     const hashedPassword = await bcrypt.hash(toString(password), 10);
 
