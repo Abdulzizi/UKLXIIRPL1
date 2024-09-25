@@ -4,7 +4,6 @@ import userRoutes from "./routes/userRoutes.js";
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware to parse JSON requests
 app.use(express.json());
 
 // USER ROUTES
