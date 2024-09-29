@@ -18,7 +18,7 @@ model User {
   name      String
   email     String   @unique
   password  String
-  role      Role     @default(ADMIN) // Enum: Kasir, Manager, Admin
+  role      Role     @default(ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   orders    Order[]
@@ -42,13 +42,14 @@ model MenuItem {
 
 model Order {
   id          Int           @id @default(autoincrement())
-  table       String // Table number or name
+  table       Table         @relation(fields: [tableId], references: [id])
+  tableId     Int
   kasirId     Int
   kasir       User          @relation(fields: [kasirId], references: [id])
   items       OrderItem[]
   total       Float
   createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  updatedAt   DateTime      @default(now())
   transaction Transaction[]
 }
 
@@ -70,7 +71,23 @@ model Transaction {
   change        Float
   paymentMethod PaymentMethod
   createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  updatedAt     DateTime      @default(now())
+}
+
+model Table {
+  id        Int         @id @default(autoincrement())
+  number    Int         @unique // nomor meja
+  capacity  Int //kapasitas meja
+  status    TableStatus // Status mejanya
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  Order     Order[]
+}
+
+enum TableStatus {
+  AVAILABLE
+  RESERVED
+  OCCUPIED
 }
 
 enum PaymentMethod {

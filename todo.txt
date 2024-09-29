@@ -1,1 +1,32 @@
-1. 
+Kasir: 
+1. Kasir dapat login ke aplikasi (DONE)
+2. Melakukan transaksi pemesanan makanan dan minuman (bisa pesan lebih dari satu menu dalam satu kali transaksi) 
+3. Melihat seluruh daftar transaksi
+4. Mencetak nota transaksi (nama cafe, tgl transaksi, nama kasir, data pemesanan) 
+
+Manajer: 
+1. Manajer dapat login ke aplikasi (DONE)
+2. Melihat seluruh data transaksi seluruh karyawan (HALF DONE)
+3. Terdapat menu filtering data transaksi berdasarkan tanggal 
+
+Admin: 
+1. Admin dapat login ke aplikasi (DONE)
+2. Mengelola data user & mengatur peran user (DONE)
+3. Mengelola data makanan & minuman (DONE)
+4. Mengelola data meja (IN PROGRESS)
+
+-------------------------------------------------------------------------------------------------------------------------------
+
+Managing menu data :
+1. Create Menu Item: Add a new menu item with details like name, description, and price.
+2. Read Menu Items: Retrieve a list of all menu items.
+3. Update Menu Item: Update the details of an existing menu item.
+4. Delete Menu Item: Remove a menu item from the database.
+
+API Endpoint :
+POST /api/admin/menu/ : Create a new menu item.
+GET /api/admin/menu/ : Retrieve all menu items.
+PUT /api/admin/menu/ : Update a menu item by ID.
+DELETE /api/admin/menu/ : Delete a menu item by ID.
+
+

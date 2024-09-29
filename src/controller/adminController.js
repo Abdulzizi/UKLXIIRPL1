@@ -1,0 +1,129 @@
+import db from "../db.js";
+
+// Create menu item
+export const createMenuItem = async (req, res) => {
+  let items = req.body;
+
+  // wrap body ke array agar bisa handling 2 kemungkinan
+  if (!Array.isArray(items)) {
+    items = [items];
+  }
+
+  try {
+    // validate item dalam array
+    for (let item of items) {
+      if (!item.name || !item.price) {
+        return res
+          .status(400)
+          .json({ message: "All fields are required for each menu item" });
+      }
+    }
+
+    // create menu item
+    const newItems = await db.menuItem.createMany({
+      data: items,
+    });
+
+    return res.status(201).json({
+      count: newItems.count,
+      message: "Menu items created successfully",
+    });
+  } catch (error) {
+    console.error(`[CREATE_MENU_ITEM] ${error.message}`);
+    res.status(500).json({ error: "Failed to create menu item(s)" });
+  }
+};
+
+// Get all menu items
+export const getAllMenuItems = async (req, res) => {
+  try {
+    const menuItems = await db.menuItem.findMany({
+      orderBy: {
+        id: "asc",
+      },
+    });
+    if (menuItems.length === 0) {
+      return res.status(404).json({ error: "Menu item not found" });
+    }
+
+    res.status(200).json(menuItems);
+  } catch (error) {
+    console.error(`[GET_ALL_MENU_ITEMS] ${error.message}`);
+    res.status(500).json({ error: "Failed to get menu items" });
+  }
+};
+
+// Update menu items
+export const updateMenuItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price } = req.body;
+
+    // Validate the id
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ error: "Invalid menu item id" });
+    }
+
+    // at least 1 field diisi
+    if (
+      name === undefined &&
+      description === undefined &&
+      price === undefined
+    ) {
+      return res
+        .status(400)
+        .json({ error: "At least one field must be provided to update" });
+    }
+
+    // cari itemnya terlebih dahulu dengan id
+    const existingItem = await db.menuItem.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingItem) {
+      return res.status(404).json({ error: "Menu item not found" });
+    }
+
+    // updating menu
+    const updatedItem = await db.menuItem.update({
+      where: { id: Number(id) },
+      data: {
+        name: name ?? undefined,
+        description: description ?? undefined,
+        price: price ?? undefined,
+      },
+    });
+
+    res
+      .status(200)
+      .json({ message: "Menu item updated successfully", updatedItem });
+  } catch (error) {
+    console.error(
+      `[UPDATE_MENU_ITEM] Error updating menu item with id ${req.params.id}: ${error.message}`
+    );
+    res
+      .status(500)
+      .json({ error: "Internal server error. Failed to update menu item" });
+  }
+};
+
+// delete menu item
+export const deleteMenuItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const menu = await db.menuItem.findUnique({ where: { id: Number(id) } });
+
+    if (!menu) {
+      return res.status(404).json({ message: `menu with id ${id} not found` });
+    }
+
+    await db.menuItem.delete({ where: { id: Number(id) } });
+
+    res
+      .status(200)
+      .json({ message: `Item with id ${id} deleted successfully` });
+  } catch (error) {
+    console.error(`[DELETE_MENU_ITEMS] ${error.message}`);
+    res.status(500).json({ error: "Failed to get menu items" });
+  }
+};
