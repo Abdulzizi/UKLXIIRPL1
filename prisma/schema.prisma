@@ -81,7 +81,7 @@ model Table {
   status    TableStatus // Status mejanya
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  Order     Order[]
+  orders    Order[]
 }
 
 enum TableStatus {

@@ -118,6 +118,10 @@ export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
 
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ message: "Valid ID is required." });
+    }
+
     // Check if the ID is valid and exists
     const user = await db.user.findUnique({
       where: { id: parseInt(id) },
@@ -129,9 +133,9 @@ export const deleteUser = async (req, res) => {
     }
 
     // If user exists, delete the user
-    await db.user.delete({ where: { id: parseInt(id) } });
+    const deletedUser = await db.user.delete({ where: { id: parseInt(id) } });
 
-    res.status(200).json({ message: "User deleted successfully" });
+    res.status(200).json({ message: "User deleted successfully", deletedUser });
   } catch (error) {
     console.error(`[DELETE_USER] ${error.message}`);
     res.status(500).json({ error: error.message });

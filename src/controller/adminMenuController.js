@@ -53,6 +53,36 @@ export const getAllMenuItems = async (req, res) => {
   }
 };
 
+export const getMenuById = async (req, res) => {
+  const { id } = req.params;
+
+  // validasi id adalah number
+  if (!id || isNaN(id)) {
+    return res.status(400).json({ message: "Valid menu item ID is required." });
+  }
+
+  try {
+    // fetch menu dengan id
+    const menuItem = await db.menuItem.findUnique({
+      where: { id: Number(id) },
+    });
+
+    // cek apakah menunya ada
+    if (!menuItem) {
+      return res.status(404).json({ message: "Menu item not found." });
+    }
+
+    // Return the found menu item
+    return res.status(200).json(menuItem);
+  } catch (error) {
+    console.error(`[GET_MENU_BY_ID_ERROR] ${error.message}`, error); // error internal tracking
+    return res.status(500).json({
+      error: "Failed to retrieve menu item. Please try again later.",
+      details: error.message, // err details
+    });
+  }
+};
+
 // Update menu items
 export const updateMenuItem = async (req, res) => {
   try {
@@ -113,15 +143,20 @@ export const deleteMenuItem = async (req, res) => {
     const { id } = req.params;
     const menu = await db.menuItem.findUnique({ where: { id: Number(id) } });
 
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ message: "Valid ID is required." });
+    }
+
     if (!menu) {
       return res.status(404).json({ message: `menu with id ${id} not found` });
     }
 
-    await db.menuItem.delete({ where: { id: Number(id) } });
+    const deletedMenu = await db.menuItem.delete({ where: { id: Number(id) } });
 
-    res
-      .status(200)
-      .json({ message: `Item with id ${id} deleted successfully` });
+    res.status(200).json({
+      message: `Item with id ${id} deleted successfully`,
+      deletedMenu,
+    });
   } catch (error) {
     console.error(`[DELETE_MENU_ITEMS] ${error.message}`);
     res.status(500).json({ error: "Failed to get menu items" });
