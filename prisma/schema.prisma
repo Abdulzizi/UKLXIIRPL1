@@ -92,5 +92,4 @@ enum TableStatus {
 
 enum PaymentMethod {
   CASH
-  CARD
 }
