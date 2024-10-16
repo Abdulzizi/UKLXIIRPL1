@@ -111,11 +111,19 @@ export const getTableById = async (req, res) => {
 // Update a table
 export const updateTable = async (req, res) => {
   const { id } = req.params; // Mengambil ID tabel dari parameter
-  const { name, capacity } = req.body;
+  const { name, capacity, status } = req.body;
 
   // Validasi ID merupakan angka
   if (!id || isNaN(id)) {
-    return res.status(400).json({ message: "ID table required." });
+    return res.status(400).json({ message: "Valid table ID is required." });
+  }
+
+  // Validasi status jika diberikan
+  if (status && !["AVAILABLE", "RESERVED", "OCCUPIED"].includes(status)) {
+    return res.status(400).json({
+      message:
+        "Invalid status. Valid values are AVAILABLE, RESERVED, or OCCUPIED.",
+    });
   }
 
   try {
@@ -125,6 +133,7 @@ export const updateTable = async (req, res) => {
       data: {
         name: name ?? undefined, // Mengupdate nama jika diberikan
         capacity: capacity ?? undefined, // Mengupdate kapasitas jika diberikan
+        status: status ?? undefined, // Mengupdate status jika diberikan
       },
     });
 

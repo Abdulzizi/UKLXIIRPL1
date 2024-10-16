@@ -1,13 +1,13 @@
 Kasir: 
 1. Kasir dapat login ke aplikasi (DONE)
-2. Melakukan transaksi pemesanan makanan dan minuman (bisa pesan lebih dari satu menu dalam satu kali transaksi) 
-3. Melihat seluruh daftar transaksi
-4. Mencetak nota transaksi (nama cafe, tgl transaksi, nama kasir, data pemesanan) 
+2. Melakukan transaksi pemesanan makanan dan minuman (bisa pesan lebih dari satu menu dalam satu kali transaksi)  (DONE)
+3. Melihat seluruh daftar transaksi (DONE)
+4. Mencetak nota transaksi (nama cafe, tgl transaksi, nama kasir, data pemesanan) (DONE)
 
 Manajer: 
 1. Manajer dapat login ke aplikasi (DONE)
-2. Melihat seluruh data transaksi seluruh karyawan (HALF DONE)
-3. Terdapat menu filtering data transaksi berdasarkan tanggal 
+2. Melihat seluruh data transaksi seluruh karyawan (DONE)
+3. Terdapat menu filtering data transaksi berdasarkan tanggal (DONE)
 
 Admin: 
 1. Admin dapat login ke aplikasi (DONE)

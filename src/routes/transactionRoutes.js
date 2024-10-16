@@ -19,7 +19,7 @@ app.get(
   "/transaction",
   authenticate,
   authorize(["KASIR"]),
-  kasir.getTransactionsByCashier
+  kasir.getTransactionsWithFilter
 );
 app.get(
   "/transaction/:orderId/receipt",

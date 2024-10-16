@@ -4,13 +4,11 @@ const allowedStatuses = ["AVAILABLE", "RESERVED", "OCCUPIED"];
 
 // Schema for table validation
 const tableSchema = Joi.object({
-  number: Joi.number().integer().positive().required().messages({
+  number: Joi.number().integer().positive().messages({
     "number.base": "Table number must be a positive integer.",
-    "any.required": "Table number is required.",
   }),
-  capacity: Joi.number().integer().positive().required().messages({
+  capacity: Joi.number().integer().positive().messages({
     "number.base": "Capacity must be a positive number.",
-    "any.required": "Capacity is required.",
   }),
   status: Joi.string()
     .valid(...allowedStatuses)

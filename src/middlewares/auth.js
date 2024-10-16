@@ -14,7 +14,7 @@ export const authenticate = async (req, res, next) => {
     // fetch db untuk ambil detail user
     const user = await db.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, role: true },
+      select: { id: true, name: true, role: true },
     });
 
     if (!user) {
