@@ -40,9 +40,9 @@ Make sure you have the following software installed on your system:
 ## Enviroment Variables
 Create a `.env` file in the root directory of the project and add the following variables:
 
-```bash
-  DATABASE_URL=your_postgresql_database_url
-  JWT_SECRET=your_secret_key
+```env
+DATABASE_URL=your_postgresql_database_url
+JWT_SECRET=your_secret_key
 ```
 
 - Replace `your_postgresql_database_url` with your actual database connection string.
