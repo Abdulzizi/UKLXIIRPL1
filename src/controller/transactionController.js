@@ -184,7 +184,7 @@ export const getTransactionsWithFilter = async (req, res) => {
 
     // Construct the filter conditions
     const filterConditions = {
-      kasirId: req.user.id,
+      // kasirId: req.user.id,
     };
 
     if (date) {
@@ -198,7 +198,7 @@ export const getTransactionsWithFilter = async (req, res) => {
     if (paymentMethod) {
       filterConditions.transaction = {
         some: {
-          paymentMethod: paymentMethod.toUpperCase(), // Ensure paymentMethod matches the enum case
+          paymentMethod: paymentMethod.toUpperCase(), // Convert to uppercase
         },
       };
     }

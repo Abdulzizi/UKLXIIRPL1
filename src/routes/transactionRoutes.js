@@ -18,7 +18,7 @@ app.post(
 app.get(
   "/transaction",
   authenticate,
-  authorize(["KASIR"]),
+  authorize(["KASIR", "MANAGER"]),
   kasir.getTransactionsWithFilter
 );
 app.get(

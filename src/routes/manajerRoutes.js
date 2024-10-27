@@ -8,9 +8,9 @@ app.use(express.json());
 
 // Get untuk transaksi dengan filtering
 app.get(
-  "/transaksi",
+  "/transaction",
   authenticate,
-  authorize(["MANAJER"]),
+  authorize(["MANAGER", "KASIR"]),
   kasir.getTransactionsWithFilter
 );
 
