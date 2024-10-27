@@ -17,16 +17,31 @@ Admin:
 
 -------------------------------------------------------------------------------------------------------------------------------
 
-Managing menu data :
-1. Create Menu Item: Add a new menu item with details like name, description, and price.
-2. Read Menu Items: Retrieve a list of all menu items.
-3. Update Menu Item: Update the details of an existing menu item.
-4. Delete Menu Item: Remove a menu item from the database.
+API ENDPOINT : 
 
-API Endpoint(MENU) :
-POST /api/admin/menu/ : Create a new menu item.
-GET /api/admin/menu/ : Retrieve all menu items.
-PUT /api/admin/menu/ : Update a menu item by ID.
-DELETE /api/admin/menu/ : Delete a menu item by ID.
+Admin Menu Routes : 
 
+POST : /api/admin/menu : CREATE NEW Menu
+GET : /api/admin/menu : READ ALL MENU
+PUT : /api/admin/menu/:id : UPDATE SPECIFIED MENU
+DELETE : /api/admin/menu/:id : DELETE SPECIFIED MENU
 
+Admin Table Routes : 
+
+POST : /api/admin/table : CREATE NEW TABLE
+GET : /api/admin/table : READ ALL TABLE
+PUT : /api/admin/table/:id : UPDATE SPECIFIED TABLE
+DELETE : /api/admin/table/:id : DELETE SPECIFIED TABLE
+
+Manager Routes : 
+
+GET : /api/manajer/transaksi : READ ALL TRANSACTION + FILTERING
+
+User Routes : 
+
+POST : /api/user/register : CREATE NEW USER 
+POST : /api/user/login : LOGIN TO GET NEW JWT TOKEN 
+
+GET : /api/user/ : READ ALL USER
+PATCH : /api/user/:id : UPDATE SPECIFIED USER
+DELETE : /api/user/:id : DELETE SPECIFIED USER
