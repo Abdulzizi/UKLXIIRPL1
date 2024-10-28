@@ -2,10 +2,12 @@ import db from "../db.js";
 
 // Create menu item
 export const createMenuItem = async (req, res) => {
-  let items = req.body;
+  let items = Array.isArray(req.body) ? req.body : [req.body];
 
-  if (!Array.isArray(items)) {
-    items = [items];
+  if (items.length === 0) {
+    return res.status(400).json({
+      message: "Request body must contain one or more menu item entries.",
+    });
   }
 
   try {
@@ -15,12 +17,23 @@ export const createMenuItem = async (req, res) => {
     });
 
     return res.status(201).json({
-      count: newItems.count,
-      message: "Menu items created successfully",
+      message: `${newItems.count} menu item(s) created successfully`,
+      items,
     });
   } catch (error) {
-    console.error(`[CREATE_MENU_ITEM] ${error.message}`);
-    return res.status(500).json({ error: "Failed to create menu item(s)" });
+    console.error(`[CREATE_MENU_ITEM_ERROR] ${error.message}`, error);
+    if (error.code === "P2002") {
+      // Unique constraint violation
+      return res.status(400).json({
+        error: `Unique constraint failed on the fields: ${error.meta.target.join(
+          ", "
+        )}`,
+      });
+    }
+    return res.status(500).json({
+      error: "Failed to create menu item(s). Please try again later.",
+      details: error.message,
+    });
   }
 };
 

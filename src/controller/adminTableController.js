@@ -2,55 +2,87 @@ import db from "../db.js";
 
 // Create a new table
 export const createTable = async (req, res) => {
-  const tables = req.body; // langsung ambil data sebagai array
+  const tables = Array.isArray(req.body) ? req.body : [req.body];
 
-  // cek apakah array atau hanya ada satu object
-  if (!Array.isArray(tables) || tables.length === 0) {
+  if (tables.length === 0) {
     return res.status(400).json({
-      message: "Request body must be an array of one or more tables.",
+      message: "Request body must contain one or more table entries.",
     });
   }
 
-  // validasi setiap table entry
+  // Validate each table entry
   for (const table of tables) {
     const { number, capacity, status } = table;
 
     if (!number || typeof number !== "number" || number <= 0) {
       return res.status(400).json({
-        message: `Table number is required and must be a positive integer for all entries.`,
+        message: "Table number is required and must be a positive integer.",
       });
     }
     if (!capacity || typeof capacity !== "number" || capacity <= 0) {
       return res.status(400).json({
-        message: `Capacity is required and must be a positive number for all entries.`,
+        message: "Capacity is required and must be a positive number.",
       });
     }
     if (!status || !["AVAILABLE", "RESERVED", "OCCUPIED"].includes(status)) {
       return res.status(400).json({
-        message: `Invalid status. Valid values are AVAILABLE, RESERVED, or OCCUPIED for all entries.`,
+        message:
+          "Invalid status. Valid values are AVAILABLE, RESERVED, or OCCUPIED.",
       });
     }
   }
 
   try {
-    // create tables
-    const newTables = await db.table.createMany({
-      data: tables.map((table) => ({
-        number: table.number,
-        capacity: table.capacity,
-        status: table.status,
+    // Check for existing tables with the same numbers
+    const existingTables = await db.table.findMany({
+      where: {
+        number: {
+          in: tables.map((table) => table.number),
+        },
+      },
+    });
+
+    // Extract existing table numbers
+    const existingNumbers = existingTables.map((table) => table.number);
+
+    // Filter out tables that already exist
+    const newTables = tables.filter(
+      (table) => !existingNumbers.includes(table.number)
+    );
+
+    if (newTables.length === 0) {
+      return res.status(400).json({
+        message: "All provided table numbers already exist.",
+        existingNumbers,
+      });
+    }
+
+    // Create new tables
+    const createdTables = await db.table.createMany({
+      data: newTables.map(({ number, capacity, status }) => ({
+        number,
+        capacity,
+        status,
       })),
     });
 
     return res.status(201).json({
-      message: `${newTables.count} table(s) created successfully`,
-      tables: tables,
+      message: `${createdTables.count} table(s) created successfully`,
+      tables: newTables,
     });
   } catch (error) {
-    console.error(`[CREATE_TABLE_ERROR] ${error.message}`, error); // Error internal tracking
+    console.error(`[CREATE_TABLE_ERROR] ${error.message}`, error);
+    if (error.code === "P2002") {
+      // Unique constraint violation
+      return res.status(400).json({
+        error: `Unique constraint failed on the fields: ${error.meta.target.join(
+          ", "
+        )}`,
+      });
+    }
     return res.status(500).json({
       error: "Failed to create table(s). Please try again later.",
-      details: error.message, // Error details
+      details: error.message,
     });
   }
 };

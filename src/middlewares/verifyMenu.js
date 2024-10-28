@@ -19,6 +19,7 @@ const baseMenuSchema = {
   }),
   role: Joi.string()
     .valid(...allowedMenuRoles)
+    .optional() // Role can be omitted when adding
     .messages({
       "string.base": "Role must be a valid string",
       "any.only": `Role must be one of: ${allowedMenuRoles.join(", ")}`,
@@ -28,33 +29,17 @@ const baseMenuSchema = {
 // Add menu schema
 const addMenuSchema = Joi.object(baseMenuSchema);
 
-// Update menu schema
-const updateMenuSchema = Joi.object({
-  ...baseMenuSchema,
-  name: baseMenuSchema.name.optional(),
-  price: baseMenuSchema.price.optional(),
-});
-
+// Validate adding or updating menu data
 const verifyMenu = (schema) => async (req, res, next) => {
   try {
     const errors = [];
 
-    // If the request body is an array, validate each item
-    if (Array.isArray(req.body)) {
-      for (const item of req.body) {
-        const { error } = schema.validate(item, { abortEarly: false });
-        if (error) {
-          errors.push(
-            ...error.details.map(({ context, message }) => ({
-              field: context.label,
-              message,
-            }))
-          );
-        }
-      }
-    } else {
-      // If the request body is a single object, validate it directly
-      const { error } = schema.validate(req.body, { abortEarly: false });
+    // Convert to array if a single object is passed
+    const items = Array.isArray(req.body) ? req.body : [req.body];
+
+    // Validate each menu entry
+    for (const item of items) {
+      const { error } = schema.validate(item, { abortEarly: false });
       if (error) {
         errors.push(
           ...error.details.map(({ context, message }) => ({
@@ -78,5 +63,13 @@ const verifyMenu = (schema) => async (req, res, next) => {
   }
 };
 
-export const verifyAddMenu = verifyMenu(addMenuSchema);
+// Update menu schema
+const updateMenuSchema = Joi.object({
+  name: baseMenuSchema.name.optional(),
+  description: baseMenuSchema.description.optional(),
+  price: baseMenuSchema.price.optional(),
+  role: baseMenuSchema.role.optional(),
+});
+
 export const verifyUpdateMenu = verifyMenu(updateMenuSchema);
+export const verifyAddMenu = verifyMenu(addMenuSchema);
