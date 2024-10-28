@@ -17,14 +17,14 @@ app.post("/login", adminVer.verifyLoginUser, user.login);
 app.get(
   "/",
   authenticate,
-  authorize(["ADMIN", "MANAGER", "KASIR"]),
+  authorize(["ADMIN", "MANAGER"]),
   user.showAllUsers
 );
 // semua role bisa lihat individual user
 app.get(
   "/:id",
   authenticate,
-  authorize(["ADMIN", "MANAGER", "KASIR"]),
+  authorize(["ADMIN", "MANAGER"]),
   user.getUserById
 );
 // hanya admin yang mendelete user
@@ -33,7 +33,7 @@ app.delete("/:id", authenticate, authorize(["ADMIN"]), user.deleteUser);
 app.patch(
   "/:id",
   authenticate,
-  authorize(["ADMIN", "MANAGER"]),
+  authorize(["ADMIN"]),
   adminVer.verifyUpdateUser,
   user.updateUser
 );

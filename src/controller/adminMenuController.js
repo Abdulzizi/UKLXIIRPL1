@@ -4,22 +4,12 @@ import db from "../db.js";
 export const createMenuItem = async (req, res) => {
   let items = req.body;
 
-  // wrap body ke array agar bisa handling 2 kemungkinan
   if (!Array.isArray(items)) {
     items = [items];
   }
 
   try {
-    // validate item dalam array
-    for (let item of items) {
-      if (!item.name || !item.price) {
-        return res
-          .status(400)
-          .json({ message: "All fields are required for each menu item" });
-      }
-    }
-
-    // create menu item
+    // Create menu items
     const newItems = await db.menuItem.createMany({
       data: items,
     });
@@ -30,7 +20,7 @@ export const createMenuItem = async (req, res) => {
     });
   } catch (error) {
     console.error(`[CREATE_MENU_ITEM] ${error.message}`);
-    res.status(500).json({ error: "Failed to create menu item(s)" });
+    return res.status(500).json({ error: "Failed to create menu item(s)" });
   }
 };
 

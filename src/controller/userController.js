@@ -103,7 +103,7 @@ export const login = async (req, res) => {
   const token = jsonwebtoken.sign(
     { userId: user.id, role: user.role },
     process.env.JWT_TOKEN,
-    { expiresIn: "1h" }
+    { expiresIn: "24h" }
   );
 
   res.status(200).json({

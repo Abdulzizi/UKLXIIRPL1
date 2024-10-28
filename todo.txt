@@ -45,3 +45,8 @@ POST : /api/user/login : LOGIN TO GET NEW JWT TOKEN
 GET : /api/user/ : READ ALL USER
 PATCH : /api/user/:id : UPDATE SPECIFIED USER
 DELETE : /api/user/:id : DELETE SPECIFIED USER
+
+
+ADMIN : 
+1. menambahkan lebih dari satu item[MENU]
+2. menambahkan lebih dari satu item[TABLE]
