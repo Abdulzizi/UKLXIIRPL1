@@ -16,19 +16,25 @@ app.post(
   kasir.createOrder
 );
 app.get(
-  "/transaction",
+  "/transaction/",
   authenticate,
   authorize(["KASIR", "MANAGER"]),
   kasir.getTransactionsWithFilter
 );
 app.get(
+  "/transaction/:orderId",
+  authenticate,
+  authorize(["KASIR", "MANAGER"]),
+  kasir.getTransactionById
+);
+
+app.get(
   "/transaction/:orderId/receipt",
   authenticate,
   authorize(["KASIR"]),
-  transVer.verifyPrintReceipt,
   kasir.printReceipt
 );
-app.put(
+app.patch(
   "/transaction/:orderId",
   authenticate,
   authorize(["KASIR"]),
@@ -39,7 +45,6 @@ app.delete(
   "/transaction/:orderId",
   authenticate,
   authorize(["KASIR"]),
-  transVer.verifyDeleteOrder,
   kasir.deleteOrder
 );
 

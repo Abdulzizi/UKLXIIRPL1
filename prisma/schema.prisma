@@ -41,16 +41,16 @@ model MenuItem {
 }
 
 model Order {
-  id          Int           @id @default(autoincrement())
-  table       Table         @relation(fields: [tableId], references: [id])
-  tableId     Int
-  kasirId     Int
-  kasir       User          @relation(fields: [kasirId], references: [id])
-  items       OrderItem[]
-  total       Float
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @default(now())
-  transaction Transaction[]
+  id        Int         @id @default(autoincrement())
+  table     Table       @relation(fields: [tableId], references: [id])
+  tableId   Int
+  kasirId   Int
+  kasir     User        @relation(fields: [kasirId], references: [id])
+  items     OrderItem[]
+  total     Float
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 model OrderItem {
@@ -61,17 +61,6 @@ model OrderItem {
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
   quantity   Int
   price      Float
-}
-
-model Transaction {
-  id            Int           @id @default(autoincrement())
-  orderId       Int
-  order         Order         @relation(fields: [orderId], references: [id])
-  totalPaid     Float
-  change        Float
-  paymentMethod PaymentMethod
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @default(now())
 }
 
 model Table {
@@ -88,6 +77,11 @@ enum TableStatus {
   AVAILABLE
   RESERVED
   OCCUPIED
+}
+
+enum OrderStatus {
+  PENDING
+  FINALIZED
 }
 
 enum PaymentMethod {

@@ -2,58 +2,56 @@ import db from "../db.js";
 import { Prisma } from "@prisma/client";
 import { startOfDay, endOfDay } from "date-fns";
 
-// Function untuk catch error
+// Function to handle errors
 const handleError = (error, res) => {
-  console.error(error.message);
+  console.error(error);
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return res.status(400).json({ message: error.message });
   }
   return res.status(500).json({ message: "An unexpected error occurred." });
 };
 
-// Make order
+// Create order
 export const createOrder = async (req, res) => {
-  const { tableId, items } = req.body;
+  const { tableId, items, totalPaid, change, paymentMethod } = req.body;
+  const isValidItem = (item) => item.menuItemId && item.quantity > 0;
 
-  if (!tableId || !Array.isArray(items) || items.length === 0) {
-    return res
-      .status(400)
-      .json({ message: "Table ID and items are required." });
+  if (
+    !tableId ||
+    !Array.isArray(items) ||
+    items.length === 0 ||
+    !items.every(isValidItem)
+  ) {
+    return res.status(400).json({
+      status: false,
+      message:
+        "Valid Table ID and items with menuItemId and quantity are required.",
+    });
   }
 
   try {
-    // Create order within a transaction
     const newOrder = await db.$transaction(async (prisma) => {
       const parsedTableId = parseInt(tableId);
-
       const table = await prisma.table.findUnique({
         where: { id: parsedTableId },
       });
 
-      if (!table) {
-        return {
-          status: 400,
-          response: { message: `Table with id ${tableId} not found.` },
-        };
-      }
+      if (!table) throw new Error(`Table with id ${tableId} not found.`);
 
-      // Check if the table is occupied or reserved
       if (table.status === "OCCUPIED" || table.status === "RESERVED") {
-        return {
-          status: 400,
-          response: { message: "Table is already occupied." },
-        };
+        return res.status(400).json({
+          status: false,
+          message: "Table is already occupied.",
+        });
       }
 
-      // Fetch menu items and calculate order items
       const orderItems = await Promise.all(
         items.map(async (item) => {
           const menuItem = await prisma.menuItem.findUnique({
             where: { id: item.menuItemId },
           });
-          if (!menuItem) {
+          if (!menuItem)
             throw new Error(`MenuItem with id ${item.menuItemId} not found.`);
-          }
           return {
             menuItemId: menuItem.id,
             quantity: item.quantity,
@@ -72,23 +70,18 @@ export const createOrder = async (req, res) => {
         },
       });
 
-      // Update table status to OCCUPIED
       await prisma.table.update({
         where: { id: parsedTableId },
         data: { status: "OCCUPIED" },
       });
-
-      return order; // Return the created order
+      return order;
     });
 
-    // Handle the response from the transaction
-    if (newOrder.status === 400) {
-      return res.status(newOrder.status).json(newOrder.response);
-    }
-
-    return res
-      .status(201)
-      .json({ message: "Order created successfully", order: newOrder });
+    return res.status(201).json({
+      status: true,
+      message: "Order created successfully",
+      order: newOrder,
+    });
   } catch (error) {
     handleError(error, res);
   }
@@ -100,9 +93,16 @@ export const updateOrder = async (req, res) => {
   const { items } = req.body;
 
   const parseOrderId = parseInt(orderId);
+  const isValidItem = (item) => item.menuItemId && item.quantity > 0;
 
-  if (!Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ message: "Items are required." });
+  if (
+    !Array.isArray(items) ||
+    items.length === 0 ||
+    !items.every(isValidItem)
+  ) {
+    return res
+      .status(400)
+      .json({ message: "Items must have valid menuItemId and quantity." });
   }
 
   try {
@@ -179,10 +179,8 @@ export const deleteOrder = async (req, res) => {
 // Get transactions with filtering
 export const getTransactionsWithFilter = async (req, res) => {
   try {
-    const { date, paymentMethod } = req.query; // Get data from query
-    // console.log(req.user);
+    const { date, paymentMethod } = req.query;
 
-    // Construct the filter conditions
     const filterConditions = {
       // kasirId: req.user.id,
     };
@@ -205,7 +203,7 @@ export const getTransactionsWithFilter = async (req, res) => {
 
     const transactions = await db.order.findMany({
       where: filterConditions,
-      include: { items: true, transaction: true },
+      include: { items: true },
     });
 
     return res.status(200).json({
@@ -214,18 +212,48 @@ export const getTransactionsWithFilter = async (req, res) => {
       data: transactions,
     });
   } catch (error) {
-    return res.status(500).json({
-      status: false,
-      message: "Error retrieving transactions",
-      error: error.message,
+    handleError(error, res);
+  }
+};
+
+export const getTransactionById = async (req, res) => {
+  const { orderId } = req.params;
+  const parsedOrderId = parseInt(orderId);
+
+  if (!orderId) {
+    return res.status(400).json({ message: "Invalid order ID." });
+  }
+
+  try {
+    const transaction = await db.order.findUnique({
+      where: { id: parsedOrderId },
+      include: {
+        items: {
+          include: {
+            menuItem: true,
+          },
+        },
+        kasir: true,
+      },
     });
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found." });
+    }
+
+    return res.status(200).json({
+      status: true,
+      message: "Transaction retrieved successfully.",
+      data: transaction,
+    });
+  } catch (error) {
+    handleError(error, res);
   }
 };
 
 // Print receipt
 export const printReceipt = async (req, res) => {
   const { orderId } = req.params;
-
   const parsedOrderId = parseInt(orderId);
 
   try {
@@ -233,13 +261,12 @@ export const printReceipt = async (req, res) => {
       where: { id: parsedOrderId },
       include: { items: true, table: true },
     });
-    if (!order) return res.status(404).json({ message: "Order not found." });
 
-    // console.log(req.user);
+    if (!order) return res.status(404).json({ message: "Order not found." });
 
     // Create the receipt
     const receipt = {
-      cafeName: "Blow eatery",
+      cafeName: "Blow Eatery",
       date: new Date(order.createdAt).toLocaleString(),
       cashier: req.user.name,
       table: order.table.id,
@@ -247,22 +274,27 @@ export const printReceipt = async (req, res) => {
       total: order.total,
     };
 
-    // Print the receipt (send it to the user)
+    // Send receipt to user
     res.status(200).json(receipt);
 
-    // Clean operasi setelah nota di print
+    // Clean up operations after printing the receipt
+    await db.$transaction(async (prisma) => {
+      try {
+        // 1. Update table status to AVAILABLE
+        await prisma.table.update({
+          where: { id: order.table.id },
+          data: { status: "AVAILABLE" },
+        });
 
-    // 1. update table jadi available lagi
-    await db.table.update({
-      where: { id: order.table.id },
-      data: { status: "AVAILABLE" },
+        // 2. Update order status to FINALIZED
+        await prisma.order.update({
+          where: { id: parsedOrderId },
+          data: { status: "FINALIZED" },
+        });
+      } catch (cleanupError) {
+        console.error("Cleanup Error: ", cleanupError);
+      }
     });
-
-    // 2. delete semua order item yang bersangkutan
-    await db.orderItem.deleteMany({ where: { orderId: parsedOrderId } });
-
-    // 3. delete ordernya sendiri
-    await db.order.delete({ where: { id: parsedOrderId } });
   } catch (error) {
     handleError(error, res);
   }

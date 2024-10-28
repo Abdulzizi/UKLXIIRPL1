@@ -35,26 +35,10 @@ const updateOrderSchema = Joi.object({
   }),
 });
 
-// Validation for printing the receipt (orderId is required in params)
-const printReceiptSchema = Joi.object({
-  orderId: Joi.number().integer().required().messages({
-    "number.base": "Order ID must be a number",
-    "any.required": "Order ID is required",
-  }),
-});
-
-// Validation for deleting an order (orderId is required in params)
-const deleteOrderSchema = Joi.object({
-  orderId: Joi.number().integer().required().messages({
-    "number.base": "Order ID must be a number",
-    "any.required": "Order ID is required",
-  }),
-});
-
-// Middleware for creating an order
-export const verifyCreateOrder = async (req, res, next) => {
+// Middleware for validating requests against the provided schema
+const verifySchema = (schema) => (req, res, next) => {
   try {
-    const { error } = createOrderSchema.validate(req.body, {
+    const { error } = schema.validate(req.body || req.params, {
       abortEarly: false,
     });
 
@@ -70,79 +54,13 @@ export const verifyCreateOrder = async (req, res, next) => {
 
     return next();
   } catch (error) {
-    console.error(`[VERIFY_CREATE_ORDER] ${error.message}`);
-    res.status(500).json({ status: false, message: "Internal Server Error" });
+    console.error(`[VERIFY_TRANSACTION] ${error.message}`);
+    return res
+      .status(500)
+      .json({ status: false, message: "Internal Server Error" });
   }
 };
 
-// Middleware for updating an order
-export const verifyUpdateOrder = async (req, res, next) => {
-  try {
-    const { error } = updateOrderSchema.validate(req.body, {
-      abortEarly: false,
-    });
-
-    if (error) {
-      return res.status(400).json({
-        status: false,
-        errors: error.details.map((i) => ({
-          field: i.context.label,
-          message: i.message,
-        })),
-      });
-    }
-
-    return next();
-  } catch (error) {
-    console.error(`[VERIFY_UPDATE_ORDER] ${error.message}`);
-    res.status(500).json({ status: false, message: "Internal Server Error" });
-  }
-};
-
-// Middleware for printing receipt
-export const verifyPrintReceipt = async (req, res, next) => {
-  try {
-    const { error } = printReceiptSchema.validate(req.params, {
-      abortEarly: false,
-    });
-
-    if (error) {
-      return res.status(400).json({
-        status: false,
-        errors: error.details.map((i) => ({
-          field: i.context.label,
-          message: i.message,
-        })),
-      });
-    }
-
-    return next();
-  } catch (error) {
-    console.error(`[VERIFY_PRINT_RECEIPT] ${error.message}`);
-    res.status(500).json({ status: false, message: "Internal Server Error" });
-  }
-};
-
-// Middleware for deleting an order
-export const verifyDeleteOrder = async (req, res, next) => {
-  try {
-    const { error } = deleteOrderSchema.validate(req.params, {
-      abortEarly: false,
-    });
-
-    if (error) {
-      return res.status(400).json({
-        status: false,
-        errors: error.details.map((i) => ({
-          field: i.context.label,
-          message: i.message,
-        })),
-      });
-    }
-
-    return next();
-  } catch (error) {
-    console.error(`[VERIFY_DELETE_ORDER] ${error.message}`);
-    res.status(500).json({ status: false, message: "Internal Server Error" });
-  }
-};
+// Exporting the validation middlewares
+export const verifyCreateOrder = verifySchema(createOrderSchema);
+export const verifyUpdateOrder = verifySchema(updateOrderSchema);
